@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.GoodsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.GoodsEntity" id="goodsMap">
+        <result property="id" column="id"/>
+        <result property="cates" column="cates"/>
+        <result property="brandid" column="brandid"/>
+        <result property="goodsname" column="goodsname"/>
+        <result property="desc" column="desc"/>
+        <result property="img" column="img"/>
+        <result property="imgs" column="imgs"/>
+        <result property="marketprice" column="marketprice"/>
+        <result property="costprice" column="costprice"/>
+        <result property="originprice" column="originprice"/>
+        <result property="starttime" column="starttime"/>
+        <result property="endtime" column="endtime"/>
+        <result property="expressRule" column="express_rule"/>
+        <result property="expressprice" column="expressprice"/>
+        <result property="location" column="location"/>
+        <result property="label" column="label"/>
+        <result property="total" column="total"/>
+        <result property="createtime" column="createtime"/>
+        <result property="displayorder" column="displayorder"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.GoodsEntity">
+		select * from shop_goods where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.GoodsEntity">
+		select * from shop_goods
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_goods 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.GoodsEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_goods
+		(
+			`cates`, 
+			`brandid`, 
+			`goodsname`, 
+			`desc`, 
+			`img`, 
+			`imgs`, 
+			`marketprice`, 
+			`costprice`, 
+			`originprice`, 
+			`starttime`, 
+			`endtime`, 
+			`express_rule`, 
+			`expressprice`, 
+			`location`, 
+			`label`, 
+			`total`, 
+			`createtime`, 
+			`displayorder`
+		)
+		values
+		(
+			#{cates}, 
+			#{brandid}, 
+			#{goodsname}, 
+			#{desc}, 
+			#{img}, 
+			#{imgs}, 
+			#{marketprice}, 
+			#{costprice}, 
+			#{originprice}, 
+			#{starttime}, 
+			#{endtime}, 
+			#{expressRule}, 
+			#{expressprice}, 
+			#{location}, 
+			#{label}, 
+			#{total}, 
+			#{createtime}, 
+			#{displayorder}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.GoodsEntity">
+		update shop_goods 
+		<set>
+			<if test="cates != null">`cates` = #{cates}, </if>
+			<if test="brandid != null">`brandid` = #{brandid}, </if>
+			<if test="goodsname != null">`goodsname` = #{goodsname}, </if>
+			<if test="desc != null">`desc` = #{desc}, </if>
+			<if test="img != null">`img` = #{img}, </if>
+			<if test="imgs != null">`imgs` = #{imgs}, </if>
+			<if test="marketprice != null">`marketprice` = #{marketprice}, </if>
+			<if test="costprice != null">`costprice` = #{costprice}, </if>
+			<if test="originprice != null">`originprice` = #{originprice}, </if>
+			<if test="starttime != null">`starttime` = #{starttime}, </if>
+			<if test="endtime != null">`endtime` = #{endtime}, </if>
+			<if test="expressRule != null">`express_rule` = #{expressRule}, </if>
+			<if test="expressprice != null">`expressprice` = #{expressprice}, </if>
+			<if test="location != null">`location` = #{location}, </if>
+			<if test="label != null">`label` = #{label}, </if>
+			<if test="total != null">`total` = #{total}, </if>
+			<if test="createtime != null">`createtime` = #{createtime}, </if>
+			<if test="displayorder != null">`displayorder` = #{displayorder}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_goods where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_goods where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

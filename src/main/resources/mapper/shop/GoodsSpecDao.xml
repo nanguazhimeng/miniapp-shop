@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.GoodsSpecDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.GoodsSpecEntity" id="goodsSpecMap">
+        <result property="id" column="id"/>
+        <result property="goodsid" column="goodsid"/>
+        <result property="title" column="title"/>
+        <result property="displayorder" column="displayorder"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.GoodsSpecEntity">
+		select * from shop_goods_spec where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.GoodsSpecEntity">
+		select * from shop_goods_spec
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_goods_spec 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.GoodsSpecEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_goods_spec
+		(
+			`goodsid`, 
+			`title`, 
+			`displayorder`
+		)
+		values
+		(
+			#{goodsid}, 
+			#{title}, 
+			#{displayorder}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.GoodsSpecEntity">
+		update shop_goods_spec 
+		<set>
+			<if test="goodsid != null">`goodsid` = #{goodsid}, </if>
+			<if test="title != null">`title` = #{title}, </if>
+			<if test="displayorder != null">`displayorder` = #{displayorder}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_goods_spec where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_goods_spec where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

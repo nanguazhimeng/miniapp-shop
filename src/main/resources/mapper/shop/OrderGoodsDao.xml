@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.OrderGoodsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.OrderGoodsEntity" id="orderGoodsMap">
+        <result property="id" column="id"/>
+        <result property="outTradeNo" column="out_trade_no"/>
+        <result property="goodsid" column="goodsid"/>
+        <result property="marketprice" column="marketprice"/>
+        <result property="total" column="total"/>
+        <result property="items" column="items"/>
+         <result property="goodsname" column="goodsname"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.OrderGoodsEntity">
+		select * from shop_order_goods where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.OrderGoodsEntity">
+		select og.*, g.goodsname as goodsname
+		
+		from shop_order_goods og
+		
+		left join shop_goods g on g.id = og.goodsid
+		
+		where 1=1
+        <if test="outTradeNo != null and outTradeNo.trim() != ''">
+            and og.out_trade_no = #{outTradeNo}
+        </if>
+        
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_order_goods 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.OrderGoodsEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_order_goods
+		(
+			`out_trade_no`, 
+			`goodsid`, 
+			`marketprice`, 
+			`total`, 
+			`items`
+		)
+		values
+		(
+			#{outTradeNo}, 
+			#{goodsid}, 
+			#{marketprice}, 
+			#{total}, 
+			#{items}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.OrderGoodsEntity">
+		update shop_order_goods 
+		<set>
+			<if test="outTradeNo != null">`out_trade_no` = #{outTradeNo}, </if>
+			<if test="goodsid != null">`goodsid` = #{goodsid}, </if>
+			<if test="marketprice != null">`marketprice` = #{marketprice}, </if>
+			<if test="total != null">`total` = #{total}, </if>
+			<if test="items != null">`items` = #{items}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_order_goods where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_order_goods where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

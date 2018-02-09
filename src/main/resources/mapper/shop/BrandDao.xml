@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.BrandDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.BrandEntity" id="brandMap">
+        <result property="id" column="id"/>
+        <result property="brandname" column="brandname"/>
+        <result property="img" column="img"/>
+        <result property="desc" column="desc"/>
+        <result property="displayorder" column="displayorder"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.BrandEntity">
+		select * from shop_brand where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.BrandEntity">
+		select * from shop_brand
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_brand 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.BrandEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_brand
+		(
+			`brandname`, 
+			`img`, 
+			`desc`, 
+			`displayorder`
+		)
+		values
+		(
+			#{brandname}, 
+			#{img}, 
+			#{desc}, 
+			#{displayorder}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.BrandEntity">
+		update shop_brand 
+		<set>
+			<if test="brandname != null">`brandname` = #{brandname}, </if>
+			<if test="img != null">`img` = #{img}, </if>
+			<if test="desc != null">`desc` = #{desc}, </if>
+			<if test="displayorder != null">`displayorder` = #{displayorder}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_brand where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_brand where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

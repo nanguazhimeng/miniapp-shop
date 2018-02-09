@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.FavoriteDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.FavoriteEntity" id="favoriteMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="goodsid" column="goodsid"/>
+        <result property="goodsname" column="goodsname"/>
+        <result property="marketprice" column="marketprice"/>
+        <result property="originalprice" column="originalprice"/>
+        <result property="img" column="img"/>
+        <result property="createetime" column="createetime"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.FavoriteEntity">
+		select * from shop_favorite where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.FavoriteEntity">
+		select * from shop_favorite
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_favorite 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.FavoriteEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_favorite
+		(
+			`uid`, 
+			`goodsid`, 
+			`goodsname`, 
+			`marketprice`, 
+			`originalprice`, 
+			`img`, 
+			`createetime`
+		)
+		values
+		(
+			#{uid}, 
+			#{goodsid}, 
+			#{goodsname}, 
+			#{marketprice}, 
+			#{originalprice}, 
+			#{img}, 
+			#{createetime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.FavoriteEntity">
+		update shop_favorite 
+		<set>
+			<if test="uid != null">`uid` = #{uid}, </if>
+			<if test="goodsid != null">`goodsid` = #{goodsid}, </if>
+			<if test="goodsname != null">`goodsname` = #{goodsname}, </if>
+			<if test="marketprice != null">`marketprice` = #{marketprice}, </if>
+			<if test="originalprice != null">`originalprice` = #{originalprice}, </if>
+			<if test="img != null">`img` = #{img}, </if>
+			<if test="createetime != null">`createetime` = #{createetime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_favorite where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_favorite where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

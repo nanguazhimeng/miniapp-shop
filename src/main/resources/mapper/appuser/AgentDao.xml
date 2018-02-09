@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.appuser.dao.AgentDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.appuser.entity.AgentEntity" id="agentMap">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="subSpend" column="sub_spend"/>
+        <result property="teamSpend" column="team_spend"/>
+        <result property="totalCommission" column="total_commission"/>
+        <result property="commission" column="commission"/>
+        <result property="realname" column="realname"/>
+        <result property="bankName" column="bank_name"/>
+        <result property="bankAcount" column="bank_acount"/>
+        <result property="idCardFace" column="id_card_face"/>
+        <result property="idCardBack" column="id_card_back"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="contactAddress" column="contact_address"/>
+        <result property="contactEmail" column="contact_email"/>
+        <result property="status" column="status"/>
+        <result property="checkTime" column="check_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="username" column="username"/>
+        <result property="mobile" column="mobile"/>
+        <result property="rolename" column="rolename"/>
+        <result property="avatar" column="avatar"/>
+        <result property="pname" column="pname"/>
+        <result property="managerUserId" column="manager_user_id"/>
+        
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.appuser.entity.AgentEntity">
+		SELECT a.*,
+			u.username AS username,
+			u.role_id,
+			u.phone,
+			u.avatar,
+			u.manager_user_id,
+			pu.username AS pname
+			FROM app_user_agent a
+			LEFT JOIN app_user_user u ON u.id = a.uid
+			LEFT JOIN app_user_user pu ON u.pid = pu.id
+			LEFT JOIN SYS_ROLE role ON role.role_id = u.role_id
+			where a.id = #{value}
+	</select>
+	<select id="queryByUid" resultType="com.ms1491.modules.appuser.entity.AgentEntity">
+		select * from app_user_agent where uid = #{value}
+	</select>
+	<select id="queryList" resultType="com.ms1491.modules.appuser.entity.AgentEntity">
+		SELECT temp.*,role.role_name as rolename FROM 
+		(select a.*,
+			u.username as username,
+			u.role_id,
+			u.phone,
+			u.avatar,
+			pu.username as pname
+		from app_user_agent a
+			left join app_user_user u on u.id = a.uid
+			left join app_user_user pu on u.pid = pu.id
+		GROUP BY a.id)temp
+		LEFT JOIN SYS_ROLE role ON role.role_id=temp.role_id
+		where 1=1
+		<if test="roleId != null and roleId.trim() != ''">
+            and temp.role_id = #{roleId}
+        </if>
+	    <if test="keywords != null and keywords.trim() != ''">
+            and temp.phone = #{keywords}
+        </if>
+		
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by temp.status asc ,temp.role_id
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from app_user_agent 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.appuser.entity.AgentEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into app_user_agent
+		(
+			`uid`, 
+			`sub_spend`, 
+			`team_spend`, 
+			`total_commission`, 
+			`commission`, 
+			`realname`, 
+			`bank_name`, 
+			`bank_acount`, 
+			`id_card_face`, 
+			`id_card_back`, 
+			`contact_phone`, 
+			`contact_address`, 
+			`contact_email`, 
+			`status`, 
+			`check_time`, 
+			`create_time`
+		)
+		values
+		(
+			#{uid}, 
+			#{subSpend}, 
+			#{teamSpend}, 
+			#{totalCommission}, 
+			#{commission}, 
+			#{realname}, 
+			#{bankName}, 
+			#{bankAcount}, 
+			#{idCardFace}, 
+			#{idCardBack}, 
+			#{contactPhone}, 
+			#{contactAddress}, 
+			#{contactEmail}, 
+			#{status}, 
+			#{checkTime}, 
+			#{createTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.appuser.entity.AgentEntity">
+		update app_user_agent 
+		<set>
+			<if test="uid != null">`uid` = #{uid}, </if>
+			<if test="subSpend != null">`sub_spend` = #{subSpend}, </if>
+			<if test="teamSpend != null">`team_spend` = #{teamSpend}, </if>
+			<if test="totalCommission != null">`total_commission` = #{totalCommission}, </if>
+			<if test="commission != null">`commission` = #{commission}, </if>
+			<if test="realname != null">`realname` = #{realname}, </if>
+			<if test="bankName != null">`bank_name` = #{bankName}, </if>
+			<if test="bankAcount != null">`bank_acount` = #{bankAcount}, </if>
+			<if test="idCardFace != null">`id_card_face` = #{idCardFace}, </if>
+			<if test="idCardBack != null">`id_card_back` = #{idCardBack}, </if>
+			<if test="contactPhone != null">`contact_phone` = #{contactPhone}, </if>
+			<if test="contactAddress != null">`contact_address` = #{contactAddress}, </if>
+			<if test="contactEmail != null">`contact_email` = #{contactEmail}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="checkTime != null">`check_time` = #{checkTime}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from app_user_agent where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from app_user_agent where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

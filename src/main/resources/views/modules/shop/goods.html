@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>商品管理</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<!-- webuploader上传插件 -->
+<link rel="stylesheet" type="text/css" href="../../plugins/webuploader/webuploader.css" />
+<link rel="stylesheet" type="text/css" href="../../plugins/webuploader/style.css" />
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/main.css">
+
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<script src="../../libs/ajaxupload.js"></script>
+
+<script type="text/javascript" src="../../plugins/webuploader/webuploader.js"></script>
+
+</head>
+<body>
+<div id="rrapp" v-cloak>
+	<div v-show="showList">
+		<div class="grid-btn">
+			<a v-if="hasPermission('goods:save')" class="btn btn-primary" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+			<a v-if="hasPermission('goods:update')" class="btn btn-primary" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+			<a v-if="hasPermission('goods:delete')" class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+		</div>
+	    <table id="jqGrid"></table>
+	    <div id="jqGridPager"></div>
+    </div>
+    
+    <div v-show="!showList" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<form class="form-horizontal">
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">商品分类</div>
+			   	<div class="col-sm-10">
+					<input type="text" class="form-control"  style="cursor:pointer;"  v-model="goods.goodscategoryName"  @click="goodscategoryTree" placeholder="商品分类"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">品牌</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.brandid" placeholder="品牌"/>
+			      
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">标题</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.goodsname" placeholder="标题"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">描述</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.desc" placeholder="描述"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">图片内容</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.img" placeholder="图片内容"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">文本内容</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.imgs" placeholder="文本内容"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">商品现价</div>
+			   	<div class="col-sm-10">
+			   		<div class="input-group">
+            			<input type="text" v-model="goods.marketprice" placeholder="现价" class="form-control valid" value="" aria-invalid="false">
+            			<span class="input-group-addon">元 成本</span>
+            			<input type="text" v-model="goods.costprice" placeholder="成本" class="form-control valid" value="" aria-invalid="false">
+            			<span class="input-group-addon">元 原价</span>
+            			<input type="text" v-model="goods.originalprice" placeholder="原价" class="form-control valid" value="" aria-invalid="false">
+           				<span class="input-group-addon">元</span>
+       			 </div>
+			    </div>
+			</div>
+<!-- 			<div class="form-group">
+			   	<div class="col-sm-2 control-label">活动开始时间</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.starttime" placeholder="活动开始时间"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">活动结束时间</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.endtime" placeholder="活动结束时间"/>
+			    </div>
+			</div> -->
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">运费设置</div>
+			   	<div class="col-sm-10">
+			   		<label class="radio-inline"> 
+			   			<input type="radio" name = "type" value="0" v-model="goods.expressRule"/> 快递
+			   		</label>
+			   		<label class="radio-inline"> 
+			   			<input type="radio" name = "type" value="1" v-model="goods.expressRule"/> 包邮
+			   		</label>
+			   		<div  class="input-group" v-show="goods.expressRule==1">
+			   			<input type="text" v-model="goods.expressprice" placeholder="运费" class="form-control valid" value="" aria-invalid="false">
+           				<span class="input-group-addon">元</span>
+           			</div>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">来源</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.location" placeholder="来源"/>
+			    </div>
+			</div>
+									<div class="form-group">
+			   	<div class="col-sm-2 control-label">标签</div>
+			   	<div class="col-sm-10">
+			   		<button class="btn btn-default" type="button" data-toggle="modal" data-target="#myModal" >添加标签</button>
+			    </div>
+			</div>
+									<div class="form-group">
+			   	<div class="col-sm-2 control-label">库存</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.total" placeholder="库存"/>
+			    </div>
+			</div>
+									<div class="form-group">
+			   	<div class="col-sm-2 control-label">创建时间</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.createtime" placeholder="创建时间"/>
+			    </div>
+			</div>
+									<div class="form-group">
+			   	<div class="col-sm-2 control-label">排序</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="goods.displayorder" placeholder="排序"/>
+			    </div>
+			</div>
+							<div class="form-group">
+				<div class="col-sm-2 control-label"></div> 
+				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</form>
+	</div>
+</div>
+<div id="goodscategoryLayer" style="display: none;padding:10px;">
+	<ul id="goodscategoryTree" class="ztree"></ul>
+</div>
+<div class="modal small fade in" id="myModal" tabindex="-1" role="dialog" style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        <h5 class="modal-title">商品规格项目</h5>
+      </div>
+      <div class="modal-body">
+        <div class="goods-modal-content">
+          <h5>我的规格</h5>
+          <div>
+                        <!-- <span class="btn btn-sm btn-default goods-specification-input"><input class="form-control" type="text"><span class="glyphicon glyphicon-ok"></span></span> -->
+            <span class="btn btn-sm btn-default goods-specification" data-index="31">点对点</span><span class="btn btn-sm btn-default goods-specification" data-index="32">111</span><span class="btn btn-sm btn-default goods-specification" data-index="30">222</span><span class="btn btn-sm btn-default goods-specification" data-index="33">222</span><button class="btn btn-sm btn-default add-custom-specification">
+            <span class="glyphicon glyphicon-plus"></span> 添加标签</button>
+          </div>
+          <hr>
+          <h5>常规规格</h5>
+          <div>
+            <span class="btn btn-sm btn-default goods-specification active" data-index="1">尺码</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="2">颜色</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="3">口味</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="4">容量</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="5">套餐</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="6">种类</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="7">尺寸</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="8">重量</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="9">型号</span>
+            <span class="btn btn-sm btn-default goods-specification" data-index="10">款式</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="text-align:center;">
+        <button type="button" class="btn btn-primary goods-specification-confirm">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../../js/modules/shop/goods.js"></script>
+</body>
+</html>

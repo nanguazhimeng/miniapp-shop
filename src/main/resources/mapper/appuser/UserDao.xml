@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.appuser.dao.UserDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.appuser.entity.UserEntity" id="userMap">
+        <result property="id" column="id"/>
+        <result property="pid" column="pid"/>
+        <result property="username" column="username"/>
+        <result property="phone" column="phone"/>
+        <result property="password" column="password"/>
+        <result property="status" column="status"/>
+        <result property="avatar" column="avatar"/>
+        <result property="gender" column="gender"/>
+        <result property="birthday" column="birthday"/>
+        <result property="roleId" column="role_id"/>
+        <result property="fans" column="fans"/>
+        <result property="accountMoney" column="account_money"/>
+        <result property="testMoney" column="test_money"/>
+        <result property="createTime" column="create_time"/>
+        <result property="exclusiveCode" column="exclusive_code"/>
+        <result property="twoDimensionCode" column="two_dimension_code"/>
+        <result property="personalSpend" column="personal_spend"/>
+        <result property="openid" column="openid"/>
+        <result property="unionid" column="unionid"/>
+        <result property="rolename" column="rolename"/>
+        <result property="pname" column="pname"/>
+        <result property="managerUserId" column="manager_user_id"/>
+        
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.appuser.entity.UserEntity">
+		select * from app_user_user where id = #{value}
+	</select>
+	<select id="queryByPhone" resultType="com.ms1491.modules.appuser.entity.UserEntity">
+		select * from app_user_user where phone = #{value}
+	</select>
+	<select id="queryByOpenId" resultType="com.ms1491.modules.appuser.entity.UserEntity">
+		select * from app_user_user where openid = #{value}
+	</select>
+	<select id="queryByManagerUserId" resultType="com.ms1491.modules.appuser.entity.UserEntity">
+		select * from app_user_user where manager_user_id = #{managerUserId}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.appuser.entity.UserEntity">
+		select u.*,(select r.role_name from sys_role r where u.role_id = r.role_id) as rolename, (select p.username from app_user_user p where u.pid = p.id) as pname from app_user_user u
+	    where 1=1
+	    <if test="keywords != null and keywords.trim() != ''">
+            and u.phone = #{keywords}
+        </if>
+	    <if test="roleId != null and roleId.trim() != ''">
+            and u.role_id = #{roleId}
+        </if>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by u.id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from app_user_user 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.appuser.entity.UserEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into app_user_user
+		(
+			`pid`, 
+			`username`, 
+			`phone`, 
+			`password`, 
+			`status`, 
+			`avatar`, 
+			`gender`, 
+			`birthday`, 
+			`role_id`, 
+			`fans`,
+			`account_money`, 
+			`test_money`, 
+			`create_time`, 
+			`exclusive_code`, 
+			`two_dimension_code`, 
+			`personal_spend`,
+			`openid`,
+			`unionid`,
+			`manager_user_id`
+		)
+		values
+		(
+			#{pid}, 
+			#{username}, 
+			#{phone}, 
+			#{password}, 
+			#{status}, 
+			#{avatar}, 
+			#{gender}, 
+			#{birthday}, 
+			#{roleId}, 
+			#{fans},
+			#{accountMoney}, 
+			#{testMoney}, 
+			#{createTime}, 
+			#{exclusiveCode}, 
+			#{twoDimensionCode}, 
+			#{personalSpend},
+			#{openid},
+			#{unionid},
+			#{managerUserId}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.appuser.entity.UserEntity">
+		update app_user_user 
+		<set>
+			<if test="pid != null">`pid` = #{pid}, </if>
+			<if test="username != null">`username` = #{username}, </if>
+			<if test="phone != null">`phone` = #{phone}, </if>
+			<if test="password != null">`password` = #{password}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="avatar != null">`avatar` = #{avatar}, </if>
+			<if test="gender != null">`gender` = #{gender}, </if>
+			<if test="birthday != null">`birthday` = #{birthday}, </if>
+			<if test="roleId != null">`role_id` = #{roleId}, </if>
+			<if test="fans != null">`fans` = #{fans}, </if>
+			<if test="accountMoney != null">`account_money` = #{accountMoney}, </if>
+			<if test="testMoney != null">`test_money` = #{testMoney}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="exclusiveCode != null">`exclusive_code` = #{exclusiveCode}, </if>
+			<if test="twoDimensionCode != null">`two_dimension_code` = #{twoDimensionCode}, </if>
+			<if test="personalSpend != null">`personal_spend` = #{personalSpend},</if>
+			<if test="managerUserId != null">`manager_user_id` = #{managerUserId}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from app_user_user where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from app_user_user where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>订单管理</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+	name="viewport">
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet"
+	href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet"
+	href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/main.css">
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+<style type="text/css">
+.nav-pills>li.active>a,.nav-pills>li.active>a:focus,.nav-pills>li.active>a:hover
+	{
+	color: #fff;
+	background-color: #337ab7;
+}
+</style>
+</head>
+<body>
+	<div id="rrapp" v-cloak>
+		<div v-show="showList">
+			<div class="grid-btn">
+				<ul class="nav nav-pills order-status-ul">
+					<li data-status="" class="active"><a href="javascript:;">全部</a>
+					</li>
+					<li data-status="0" class=""><a href="javascript:;">待付款</a>
+					</li>
+					<li data-status="1" class=""><a href="javascript:;">已完成</a>
+					</li>
+					<li data-status="2" class=""><a href="javascript:;">待发货</a>
+					</li>
+					<li data-status="3" class=""><a href="javascript:;">待收货</a>
+					</li>
+					<li data-status="-1" class=""><a href="javascript:;">已关闭</a>
+					</li>
+				</ul>
+			</div>
+			<div class="grid-btn">
+				<div class="form-group col-sm-2">
+					<input type="text" class="form-control" v-model="q.outTradeNo"
+						@keyup.enter="query" placeholder="订单编号">
+				</div>
+				<!-- 			<div class="form-group col-sm-2">
+				<select type="text" class="form-control" v-model="q.status"  placeholder="订单状态">
+					<option value="0">全部</option>
+					<option value="0">待付款</option>
+					<option value="1">已完成</option>
+					<option value="2">待发货</option>
+					<option value="3">待收货</option>
+					<option value="-1">已关闭</option>
+				</select>
+			</div> -->
+				<a class="btn btn-default" @click="query">查询</a>
+				<!-- 			<a v-if="hasPermission('order:save')" class="btn btn-primary" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+ -->
+				<a v-if="hasPermission('order:update')" class="btn btn-primary"
+					@click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;查看详情</a>
+				<!-- 			<a v-if="hasPermission('order:delete')" class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a> -->
+			</div>
+			<table id="jqGrid"></table>
+			<div id="jqGridPager"></div>
+		</div>
+		<div v-show="!showList" class="panel panel-default">
+			<div class="panel-heading">{{title}}</div>
+			<form class="form-horizontal">
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">用户：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.username}}|{{order.phone}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">订单状态：</div>
+					<div class="col-sm-9 col-xs-10">
+						<h3 v-show="order.status==-1" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">已关闭</span>
+						</h3>
+						<h3 v-show="order.status==0" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">待付款</span>
+						</h3>
+						<h3 v-show="order.status==1" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">已完成</span>
+						</h3>
+						<h3 v-show="order.status==2" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">待发货</span>
+						</h3>
+						<h3 v-show="order.status==3" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">待收货</span>
+						</h3>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">订单金额：</div>
+					<div class="col-sm-1 control-label">
+						<h3 class="form-control-static" style="margin-top:-5px;">
+							<span class="text-default">￥{{order.price}}</span>
+						</h3>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<div class="col-sm-2 control-label">市场价：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{order.goodsprice}}</span>
+					</div>
+					<div class="col-sm-2 control-label">成本价：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{order.costprice}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">会员折扣：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{order.discount}}</span>
+					</div>
+					<div class="col-sm-2 control-label">积分抵扣：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{order.discounttestmoney}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">支付方式</div>
+					<div class="col-sm-9 col-xs-10">
+						<span v-show="order.payType=='alipay'" class="text-default">支付宝</span>
+						<span v-show="order.payType=='wx'" class="text-default">微信支付</span>
+						<span v-show="order.payType=='account'" class="text-default">余额支付</span>
+						<span v-show="order.payType=='test'" class="text-default">积分支付</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="form-group">
+						<div class="col-sm-2 control-label">快递公司</div>
+						<div class="col-sm-10">
+							<input type="text" class="form-control"
+								v-model="order.expressCompany" placeholder="快递公司" />
+						</div>
+					</div>
+					<div class="col-sm-2 control-label">快递单号</div>
+					<div class="col-sm-10">
+
+						<input type="text" class="form-control" v-model="order.expressId"
+							placeholder="快递单号" />
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">联系人：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.addressUsername}},{{order.addressMobile}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">联系地址：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.adress}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">备注：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.remark}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">卖家店铺：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.storeName}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">商品信息：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{order.projectName}}</span>
+					</div>
+				</div>
+				<div class="panel-heading">
+					<span>商品信息</span>
+				</div>
+				<div class="form-group" v-if="items.length">
+				<div class="panel-body table-responsive">
+					<table class="table table-hover">
+						<thead class="navbar-inner" >
+							<tr>
+								<th style="width:200px">标题</th>
+								<th>规格</th>
+								<th style="text-align: center;">单价(元)</th>
+								<th style="text-align: center;">数量</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in items">
+								<td class="full">{{item.title}}</td>
+								<td>{{item.items}}</td>
+								<td style="text-align: right;">￥{{item.price}}</td>
+								<td style="text-align: right;">x{{item.total}}</td>
+							</tr>
+
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+
+				<div class="form-group">
+					<div class="col-sm-2 control-label"></div>
+					<input type="button" class="btn btn-primary" @click="saveOrUpdate"
+						value="确定" /> &nbsp;&nbsp;<input type="button"
+						class="btn btn-warning" @click="reload" value="返回" />
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<script src="../../js/modules/shop/order.js"></script>
+	<script type="text/javascript">
+		$('.order-status-ul').on('click', 'li', function(e) {
+			if ($(this).hasClass('active')) {
+				//$(this).removeClass('active');  
+				//TODO 进行隐藏域的添加  
+			} else {
+				$('.order-status-ul li').removeClass('active');
+				$(this).addClass('active');
+				//TODO 进行隐藏域的减少  
+			}
+			vm.q.status = $(this).data("status");
+			vm.query();
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.GoodsSpecItemDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.GoodsSpecItemEntity" id="goodsSpecItemMap">
+        <result property="id" column="id"/>
+        <result property="specid" column="specid"/>
+        <result property="title" column="title"/>
+        <result property="displayorder" column="displayorder"/>
+    </resultMap>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.GoodsSpecItemEntity">
+		select * from shop_goods_spec_item where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.GoodsSpecItemEntity">
+		select * from shop_goods_spec_item
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_goods_spec_item 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.GoodsSpecItemEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_goods_spec_item
+		(
+			`specid`, 
+			`title`, 
+			`displayorder`
+		)
+		values
+		(
+			#{specid}, 
+			#{title}, 
+			#{displayorder}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.GoodsSpecItemEntity">
+		update shop_goods_spec_item 
+		<set>
+			<if test="specid != null">`specid` = #{specid}, </if>
+			<if test="title != null">`title` = #{title}, </if>
+			<if test="displayorder != null">`displayorder` = #{displayorder}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_goods_spec_item where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_goods_spec_item where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

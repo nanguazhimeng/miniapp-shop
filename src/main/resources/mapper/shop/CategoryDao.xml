@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ms1491.modules.shop.dao.CategoryDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ms1491.modules.shop.entity.CategoryEntity" id="categoryMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="iconurl" column="iconurl"/>
+        <result property="pid" column="pid"/>
+        <result property="displayorder" column="displayorder"/>
+        <result property="parentName" column="parentName"/>
+    </resultMap>
+	<select id="queryListParentId" resultType="com.ms1491.modules.shop.entity.CategoryEntity">
+		select * from shop_category where pid = #{pid} order by displayorder asc 
+	</select>
+
+	<select id="queryObject" resultType="com.ms1491.modules.shop.entity.CategoryEntity">
+		select * from shop_category where id = #{value}
+	</select>
+
+	<select id="queryList" resultType="com.ms1491.modules.shop.entity.CategoryEntity">
+		select * , (select p.name from shop_category p where p.id = c.pid) as parentName 
+		from shop_category c
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from shop_category 
+	</select>
+	 
+	<insert id="save" parameterType="com.ms1491.modules.shop.entity.CategoryEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into shop_category
+		(
+			`name`, 
+			`iconurl`, 
+			`pid`, 
+			`displayorder`
+		)
+		values
+		(
+			#{name}, 
+			#{iconurl}, 
+			#{pid}, 
+			#{displayorder}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.ms1491.modules.shop.entity.CategoryEntity">
+		update shop_category 
+		<set>
+			<if test="name != null">`name` = #{name}, </if>
+			<if test="iconurl != null">`iconurl` = #{iconurl}, </if>
+			<if test="pid != null">`pid` = #{pid}, </if>
+			<if test="displayorder != null">`displayorder` = #{displayorder}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="delete">
+		delete from shop_category where id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from shop_category where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

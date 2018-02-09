@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>代理管理</title>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<link rel="stylesheet" href="../../css/bootstrap.min.css">
+<link rel="stylesheet" href="../../css/font-awesome.min.css">
+<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+<link rel="stylesheet" href="../../css/main.css">
+<script src="../../libs/jquery.min.js"></script>
+<script src="../../plugins/layer/layer.js"></script>
+<script src="../../libs/bootstrap.min.js"></script>
+<script src="../../libs/vue.min.js"></script>
+<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+	<div v-show="showList">
+			<div class="grid-btn">
+				<ul class="nav nav-pills user-role-ul">
+					<li data-role="" class="active"><a href="javascript:;">全部</a>
+					</li>
+					<li data-role="0" class=""><a href="javascript:;">审核中</a>
+					</li>
+					<li data-role="1" class=""><a href="javascript:;">总经理</a>
+					</li>
+					<li data-role="2" class=""><a href="javascript:;">省代</a>
+					</li>
+					<li data-role="3" class=""><a href="javascript:;">市代</a>
+					</li>
+					<li data-role="4" class=""><a href="javascript:;">经销商</a>
+					</li>
+				</ul>
+			</div>
+		<div class="grid-btn">
+		   	<div class="form-group col-sm-2">
+		      <input type="text" class="form-control" v-model="q.keywords" @keyup.enter="query" placeholder="手机号">
+			</div>
+		   	<div class="form-group col-sm-2">
+			</div>
+			<a class="btn btn-default" @click="query">查询</a>
+			<a class="btn btn-primary" @click="check"><i class="fa fa-plus"></i>&nbsp;去审核</a>
+			<a class="btn btn-primary" @click="setPassword"><i class="fa fa-plus"></i>&nbsp;后台管理员设置</a>
+			<a v-if="hasPermission('agent:update')" class="btn btn-primary" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+		</div>
+	    <table id="jqGrid"></table>
+	    <div id="jqGridPager"></div>
+    </div>
+    
+    <div v-show="!showList && !showSetPassword" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<form class="form-horizontal">
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">用户：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.username}}|{{agent.phone}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">审核状态：</div>
+					<div class="col-sm-9 col-xs-10">
+						<h3 v-show="agent.status==0" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">未审核</span>
+						</h3>
+						<h3 v-show="agent.status==1" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">审核通过</span>
+						</h3>
+						<h3 v-show="agent.status==2" class="form-control-static"
+							style="margin-top: -5px;">
+							<span class="text-success">审核失败</span>
+						</h3>
+					</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">个人业绩：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{agent.subSpend}}</span>
+					</div>
+					<div class="col-sm-2 control-label">团队业绩：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{agent.teamSpend}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label">总佣金：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{agent.totalCommission}}</span>
+					</div>
+					<div class="col-sm-2 control-label">未提佣金：</div>
+					<div class="col-sm-1 control-label">
+						<span class="text-default">￥{{agent.commission}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">真实姓名：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.realname}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">银行名称：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.bankName}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">银行卡号：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.bankAcount}}</span>
+					</div>
+				</div
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">粉丝量：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.fans}}人</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">联系电话：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.contactPhone}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">联系地址：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.contactAddress}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">email：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.contactEmail}}</span>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">创建时间：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.createTime}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">审核时间：</div>
+					<div class="col-sm-9 col-xs-10">
+						<span class="text-default">{{agent.checkime}}</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2 control-label" style="margin-top: -5px;">身份证：</div>
+					<div class="col-sm-9 col-xs-10">
+						<img alt="" src="agent.idCardFace">
+						<img alt="" src="agent.idCardBack">
+					</div>
+				</div>
+				
+				<div class="form-group">
+				<div class="col-sm-2 control-label"></div> 
+				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</form>
+	</div>
+	<div v-show="showSetPassword" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<form class="form-horizontal">
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">用户名</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="manager.username" placeholder="用户名" readonly="readonly"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">手机号</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="manager.mobile" placeholder="手机号" readonly="readonly"/>
+			    </div>
+			</div>
+			<div class="form-group">
+			   	<div class="col-sm-2 control-label">密码</div>
+			   	<div class="col-sm-10">
+			      <input type="text" class="form-control" v-model="manager.password" placeholder="为空时则不修改"/>
+			    </div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"></div> 
+				<input type="button" class="btn btn-primary" @click="updatePassword" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</form>
+	</div>
+	</div>
+<!-- <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">  
+    <div class="modal-dialog" role="document">  
+        <div class="modal-content">  
+            <div class="modal-header">  
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">  
+                    <span aria-hidden="true">×</span>  
+                </button>  
+                <h4 class="modal-title" id="myModalLabel">审核</h4>  
+            </div>  
+            <div class="modal-body">  
+                <form class="form-horizontal"> 
+					<div class="form-group">
+						<div class="col-sm-2 control-label" style="margin-top: -5px;">用户：</div>
+						<div class="col-sm-9 col-xs-10">
+							<span class="text-default" >{{agent.username}}|{{agent.phone}}</span>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-2 control-label">审核状态：</div>
+						<div class="col-sm-9 col-xs-10">
+							<h3 v-show="agent.status==0" class="form-control-static"
+								style="margin-top: -5px;">
+								<span class="text-success">未审核</span>
+							</h3>
+							<h3 v-show="agent.status==1" class="form-control-static"
+								style="margin-top: -5px;">
+								<span class="text-success">已审核</span>
+							</h3>
+							<h3 v-show="agent.status==1" class="form-control-static"
+								style="margin-top: -5px;">
+								<span class="text-success">审核失败</span>
+							</h3>
+						</div>
+					</div> 
+                </form>  
+            </div>  
+            <div class="modal-footer">  
+                <button type="button" class="btn btn-default" data-dismiss="modal" @click="reload">驳回</button>  
+                <button type="button" class="btn btn-primary" @click="saveOrUpdate">Save</button>  
+            </div>  
+        </div>  
+    </div>  
+</div> -->
+
+<script src="../../js/modules/appuser/agent.js"></script>
+	<script type="text/javascript">
+		$('.user-role-ul').on('click', 'li', function(e) {
+			if ($(this).hasClass('active')) {
+				//$(this).removeClass('active');  
+				//TODO 进行隐藏域的添加  
+			} else {
+				$('.user-role-ul li').removeClass('active');
+				$(this).addClass('active');
+				//TODO 进行隐藏域的减少  
+			}
+			vm.q.roleId = $(this).data("role");
+			vm.query();
+		});
+	</script>
+</body>
+</html>
